@@ -119,40 +119,35 @@ class FeatureExtractor(object):
         # top 3 elements of the stack
         if len(state.stack) < 3:
             stack = [i for i in reversed(state.stack)]
-            stack.extend([-1]*(3-len(state.stack)))
+            stack.extend([None] * (3 - len(state.stack)))
         else:
             stack = [i for i in reversed(state.stack[-3:])]
-        # sta_buf = [i for i in reversed(stack)]
         sta_buf = [i for i in stack]
-        
+
         if len(state.buffer) < 3:
             buffer = [i for i in reversed(state.buffer)]
-            buffer.extend([-1]*(3-len(state.buffer)))
+            buffer.extend([None] * (3 - len(state.buffer)))
         else:
             buffer = [i for i in reversed(state.buffer[-3:])]
-        
+
         sta_buf.extend(buffer)
-        # print(stack)
-        # print([words[i] for i in stack])
+
         for i in sta_buf:
-            if words[i] is None:
-                if i == 0:
-                    index = self.word_vocab.get('<ROOT>')
-                elif pos[i] == 'CD':
-                    index = self.word_vocab.get('<CD>')
-                elif pos[i] == 'NNP':
-                    index = self.word_vocab.get('<NNP>')
+            if i is None:
+                indices.append(4)
+            elif i == 0:
+                indices.append(3)
+            elif pos[i] == 'CD':
+                # print(pos[i])
+                indices.append(0)
+            elif pos[i] == 'NNP':
+                indices.append(1)
             else:
-                if i == -1:
-                    index = self.word_vocab.get('<NULL>')
+                wordtoindex = self.word_vocab.get(words[i].lower(), None)
+                if wordtoindex is None:
+                    indices.append(2)
                 else:
-                    if self.word_vocab.get(words[i].lower()) is None:
-                        index = self.word_vocab.get('<NULL>')
-                    else:
-                        index = self.word_vocab.get(words[i].lower())
-            indices.append(index)
-        # print(state)
-        # print(indices)
+                    indices.append(wordtoindex)
         return indices
 
     def get_output_representation(self, output_pair):  
@@ -161,8 +156,6 @@ class FeatureExtractor(object):
         one_hot = np.zeros(91, dtype=int)
         if index is not None:
             one_hot[index] = 1
-        # print(output_pair)
-        # sys.exit()
         return one_hot
 
      
@@ -198,15 +191,6 @@ if __name__ == "__main__":
         print("Could not find vocabulary files {} and {}".format(WORD_VOCAB_FILE, POS_VOCAB_FILE))
         sys.exit(1) 
 
-    # argv = ['', 'data/train.conll', 'data/input_train.npy', 'data/target_train.npy']
-    # with open(argv[1],'r') as in_file:   
-
-    #     extractor = FeatureExtractor(word_vocab_f, pos_vocab_f)
-    #     print("Starting feature extraction... (each . represents 100 sentences)")
-    #     inputs, outputs = get_training_matrices(extractor,in_file)
-    #     print("Writing output...")
-    #     np.save(argv[2], inputs)
-    #     np.save(argv[3], outputs)
     with open(sys.argv[1],'r') as in_file:   
 
         extractor = FeatureExtractor(word_vocab_f, pos_vocab_f)
