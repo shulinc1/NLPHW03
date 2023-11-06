@@ -46,7 +46,9 @@ if __name__ == "__main__":
             pos = dtree.pos()
             predict = parser.parse_sentence(words, pos)
             labeled_correct, unlabeled_correct, num_words = compare_parser(dtree, predict)
-            #if num_words==0:
+            if num_words==0:
+                print(words)
+                print(pos)
                 #continue
             las_s = labeled_correct / float(num_words)
             uas_s = unlabeled_correct / float(num_words)
