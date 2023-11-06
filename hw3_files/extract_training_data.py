@@ -137,17 +137,16 @@ class FeatureExtractor(object):
                 indices.append(4)
             elif i == 0:
                 indices.append(3)
-            elif pos[i] == 'CD':
-                # print(pos[i])
-                indices.append(0)
             elif pos[i] == 'NNP':
                 indices.append(1)
+            elif pos[i] == 'CD':
+                indices.append(0)
             else:
-                wordtoindex = self.word_vocab.get(words[i].lower(), None)
-                if wordtoindex is None:
+                word_index = self.word_vocab.get(words[i].lower(), None)
+                if word_index is None:
                     indices.append(2)
                 else:
-                    indices.append(wordtoindex)
+                    indices.append(word_index)
         return indices
 
     def get_output_representation(self, output_pair):  
