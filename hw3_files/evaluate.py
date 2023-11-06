@@ -46,10 +46,6 @@ if __name__ == "__main__":
             pos = dtree.pos()
             predict = parser.parse_sentence(words, pos)
             labeled_correct, unlabeled_correct, num_words = compare_parser(dtree, predict)
-            if num_words==0:
-                print(words)
-                print(pos)
-                #continue
             las_s = labeled_correct / float(num_words)
             uas_s = unlabeled_correct / float(num_words)
             las_list.append(las_s)
@@ -74,3 +70,4 @@ if __name__ == "__main__":
     print("Micro Avg. Unlabeled Attachment Score: {}\n".format(uas_micro))
     print("Macro Avg. Labeled Attachment Score: {}".format(las_macro))
     print("Macro Avg. Unlabeled Attachment Score: {}".format(uas_macro))
+
