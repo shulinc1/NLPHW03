@@ -25,19 +25,33 @@ class Parser(object):
         state.stack.append(0)
 
         while state.buffer:
+            trans = []
+            if not state.stack:
+                trans.append('shift')
+            elif state.stack[-1] == 0:
+                trans.append('right_arc')
+                if len(state.buffer) > 1:
+                    trans.append('shift')
+            else:
+                trans.append('right_arc')
+                trans.append('left_arc')
+                if len(state.buffer) > 1:
+                    trans.append('shift')
+
             features = self.extractor.get_input_representation(words, pos, state)
-            predictions = self.model.predict(np.array([features]))[0]
+            predictions = self.model.predict(np.array([features]).reshape((1, 6)))[0]
             sorted_action_indices = np.argsort(predictions)[::-1]
-            action, label = self.output_labels[sorted_action_indices[0]]
-            # print(action)
-            # print("state",state)
-            # sys.exit()
-            if action == 'shift':
-                state.shift()
-            elif action == 'left_arc' and not (state.stack and state.stack[-1] == 0):
-                state.left_arc(label)
-            elif action == 'right_arc' :
-                state.right_arc(label)
+
+            for i in sorted_action_indices:
+                action, label = self.output_labels[i]
+                if action in trans:
+                    if action == 'shift':
+                        state.shift()
+                    elif action == 'left_arc':
+                        state.left_arc(label)
+                    else:
+                        state.right_arc(label)
+                    break
 
         result = DependencyStructure()
         for p, c, r in state.deps:
@@ -58,16 +72,6 @@ if __name__ == "__main__":
         sys.exit(1) 
 
     extractor = FeatureExtractor(word_vocab_f, pos_vocab_f)
-
-    # argv = ['', 'data/model.h5', 'data/dev.conll']
-    # parser = Parser(extractor, argv[1])
-    # with open(argv[2],'r') as in_file: 
-    #     for dtree in conll_reader(in_file):
-    #         words = dtree.words()
-    #         pos = dtree.pos()
-    #         deps = parser.parse_sentence(words, pos)
-    #         print(deps.print_conll())
-    #         print()
 
     parser = Parser(extractor, sys.argv[1])
     with open(sys.argv[2],'r') as in_file: 
